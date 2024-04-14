@@ -12,6 +12,8 @@
 #include <string>
 #include <sstream>
 
+#include <exception>
+
 #include "Define_CPPTable.h"
 
 // 주의, 32비트로 만들고 64비트 호환모드로 사용하면 메모리가 절삭될 수 있습니다.
@@ -44,10 +46,10 @@ typedef unsigned long memIndex_t;
 typedef unsigned long columnId_t;
 typedef unsigned long primaryId_t;
 
+using eDateTime_t	= std::chrono::high_resolution_clock::time_point;
+using eFloat_t		= double;
 using eStr_t		= std::string;
 using eInt_t		= int64_t;
-using eFloat_t		= double;
-using eDateTime_t	= std::chrono::high_resolution_clock::time_point;
 
 enum ERTTI
 {
