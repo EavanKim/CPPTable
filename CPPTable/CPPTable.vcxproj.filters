@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Inc\ETable.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -33,17 +30,26 @@
     <ClInclude Include="Inc\ESchema.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Inc\EAlloc.h">
+    <ClInclude Include="Inc\EAllocator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Inc\EMemoryPool.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Inc\IEntity.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\EMemoryBlock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\EStaticMemoryBlock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\IMemoryBlock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Table.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -51,6 +57,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Src\Schema.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\EMemoryPool.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

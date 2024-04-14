@@ -15,9 +15,20 @@ namespace CPPTable
 	class CPPTABLE_API ETable
 	{
 	public:
+		ETable()
+		{
+
+		}
+
+		~ETable()
+		{
+
+		}
 
 	private:
-
+		std::unordered_map<columnId_t, std::unordered_map<primaryId_t, EListValue>> m_columnData;
+		std::unordered_map<primaryId_t, std::unordered_map<columnId_t, EListValue>> m_rowData;
+		EListValue* m_values = nullptr;
 	};
 }
 
