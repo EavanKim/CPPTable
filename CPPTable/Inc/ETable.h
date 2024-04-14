@@ -26,6 +26,56 @@ namespace CPPTable
 		}
 
 	private:
+		void Select(columnId_t _targetColumns)
+		{
+
+		}
+
+		void Insert(columnId_t _targetColumns, std::string& _insertTarget)
+		{
+			
+		}
+
+		ERTTI TypeCheck(std::string& _value)
+		{
+			ERTTI result = ERTTI::ERTTI_STRING;
+
+			for (char ch : _value)
+			{
+				if (0 == std::isdigit(ch))
+				{
+					if ('.' == ch && ERTTI::ERTTI_FLOAT != result)
+					{
+						result = ERTTI::ERTTI_FLOAT;
+						continue;
+					}
+					else
+					{
+						return result;
+					}
+				}
+			}
+
+			return ERTTI::ERTTI_INT; // UNIXTIME Stamp는 INT와 동격으로 취급합니다. 다만 출력할 때 문자열 처리하면 날자로 뺄 수 있도록만 케어하는 내용입니다.
+		}
+
+		void AddData(primaryId_t _y, columnId_t _x, int64_t _integer)
+		{
+
+		}
+
+		void AddData(primaryId_t _y, columnId_t _x, double _floting)
+		{
+
+		}
+
+		void AddData(primaryId_t _y, columnId_t _x, std::string& _str)
+		{
+
+		}
+
+		primaryId_t m_indexCounter = 0;
+		std::vector<ERTTI> m_columns;
 		std::unordered_map<columnId_t, std::unordered_map<primaryId_t, EListValue>> m_columnData;
 		std::unordered_map<primaryId_t, std::unordered_map<columnId_t, EListValue>> m_rowData;
 		EListValue* m_values = nullptr;

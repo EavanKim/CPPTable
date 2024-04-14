@@ -7,9 +7,13 @@ public:
 	EStaticMemoryBlock(const memSize_t _memSize)
 		: staticBlockSize(_memSize)
 	{
-		memset(m_data, 0, staticBlockSize);
-		m_start = ParsePtr(m_data);
-		m_end = m_start + staticBlockSize;
+		m_data = new EBYTE[_memSize];
+		if (nullptr != m_data)
+		{
+			memset(m_data, 0, staticBlockSize);
+			m_start = ParsePtr(m_data);
+			m_end = m_start + staticBlockSize;
+		}
 	}
 
 	~EStaticMemoryBlock()

@@ -8,7 +8,9 @@
 #include <map>
 #include <unordered_map>
 #include <ctime>
+#include <chrono>
 #include <string>
+#include <sstream>
 
 #include "Define_CPPTable.h"
 
@@ -45,7 +47,7 @@ typedef unsigned long primaryId_t;
 using eStr_t		= std::string;
 using eInt_t		= int64_t;
 using eFloat_t		= double;
-using eDateTime_t	= __time64_t;
+using eDateTime_t	= std::chrono::high_resolution_clock::time_point;
 
 enum ERTTI
 {
@@ -53,7 +55,7 @@ enum ERTTI
 	ERTTI_DATETIME,
 	ERTTI_INT,
 	ERTTI_FLOAT,
-	ERTTI_STR,
+	ERTTI_STRING,
 	ERTTI_MAX
 };
 
@@ -63,13 +65,107 @@ enum ERTTI
 // 테이블에서의 데이터 위치는 키값으로 처리합니다.
 struct CPPTABLE_API EListValue
 {
+	EListValue(ERTTI _rtti, columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
+		: m_type(_rtti)
+		, m_column(_x)
+		, m_row(_y)
+		, m_prev(_prev)
+		, m_next(_next)
+	{
+		
+	}
+
+
+
 	ERTTI m_type = ERTTI::ERTTI_UNKNOWN;
 	columnId_t m_column = 0;
 	primaryId_t m_row = 0;
 	EListValue* m_prev = nullptr;
 	EListValue* m_next = nullptr;
-	void* m_ptr = nullptr;
 };
+
+struct CPPTABLE_API EListValue_DATETIME : EListValue
+{
+	EListValue_DATETIME(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
+		: EListValue(ERTTI::ERTTI_DATETIME, _x, _y, _prev, _next)
+	{
+
+	}
+
+	EListValue_DATETIME(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eDateTime_t _init)
+		: EListValue(ERTTI::ERTTI_DATETIME, _x, _y, _prev, _next)
+		, m_data(_init)
+	{
+
+	}
+
+	eDateTime_t m_data = std::chrono::high_resolution_clock::now();
+};
+
+struct CPPTABLE_API EListValue_INT : EListValue
+{
+	EListValue_INT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
+		: EListValue(ERTTI::ERTTI_INT, _x, _y, _prev, _next)
+	{
+
+	}
+
+	EListValue_INT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eInt_t _init)
+		: EListValue(ERTTI::ERTTI_INT, _x, _y, _prev, _next)
+		, m_data(_init)
+	{
+
+	}
+
+	eInt_t m_data = 0;
+};
+
+struct CPPTABLE_API EListValue_FLOAT : EListValue
+{
+	EListValue_FLOAT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
+		: EListValue(ERTTI::ERTTI_FLOAT, _x, _y, _prev, _next)
+	{
+
+	}
+
+	EListValue_FLOAT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eFloat_t _init)
+		: EListValue(ERTTI::ERTTI_FLOAT, _x, _y, _prev, _next)
+		, m_data(_init)
+	{
+
+	}
+
+	// 4byte가 될 수 있으므로 작은 수 기준으로 선언합니다.
+	eFloat_t m_data = 0.f;
+};
+
+struct CPPTABLE_API EListValue_STRING : EListValue
+{
+	EListValue_STRING(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
+		: EListValue(ERTTI::ERTTI_STRING, _x, _y, _prev, _next)
+	{
+
+	}
+
+	EListValue_STRING(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eStr_t _init)
+		: EListValue(ERTTI::ERTTI_STRING, _x, _y, _prev, _next)
+		, m_data(_init)
+	{
+
+	}
+
+	eStr_t m_data = "";
+};
+
+__forceinline std::vector<std::string> StrSplit(const std::string& _string, char _split)
+{
+	std::vector<std::string> tokens;
+	std::string token;
+	std::istringstream tokenStream(_string);
+	while (std::getline(tokenStream, token, _split))
+		tokens.push_back(token);
+	return tokens;
+}
 
 #include "IMemoryBlock.h"
 #include "EMemoryBlock.h"
