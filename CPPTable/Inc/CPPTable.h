@@ -18,11 +18,84 @@
 
 // 주의, 32비트로 만들고 64비트 호환모드로 사용하면 메모리가 절삭될 수 있습니다.
 // 반드시 타겟 아키텍처를 일치시켜서 사용하세요.
+
 #if _WIN64
 using INTPTR = uint64_t;
 #elif _WIN32
 using INTPTR = uint32_t;
 #endif
+
+template<typename T>
+struct IPTR
+{
+public:
+	IPTR()
+	{
+
+	}
+
+	IPTR(T* _ptr, bool _dispose = false)
+		: ptr_(_ptr)
+		, disposePtr_(_dispose)
+	{
+
+	}
+
+	IPTR(INTPTR _int, bool _dispose = false)
+		: ptr_((T*)_int)
+		, disposePtr_(_dispose)
+	{
+
+	}
+
+	virtual ~IPTR()
+	{
+		if ((nullptr != ptr_) && disposePtr_)
+		{
+			delete ptr_;
+			ptr_ = nullptr;
+		}
+	}
+
+	T* operator->()
+	{
+		return ptr_;
+	}
+
+	INTPTR operator*()
+	{
+		return (INTPTR)ptr_;
+	}
+
+	INTPTR operator=(INTPTR _int)
+	{
+		if ((nullptr != ptr_) && disposePtr_)
+		{
+			delete ptr_;
+			ptr_ = nullptr;
+		}
+
+		ptr_ = (INTPTR)_int;
+		return ptr_;
+	}
+
+	T* operator=(T* _ptr)
+	{
+		if ((nullptr != ptr_) && disposePtr_)
+		{
+			delete ptr_;
+			ptr_ = nullptr;
+		}
+
+		ptr_ = _ptr;
+		return ptr_;
+	}
+
+private:
+	bool disposePtr_ = false;
+	T* ptr_ = nullptr;
+};
+
 
 typedef unsigned char EBYTE;
 
@@ -163,17 +236,24 @@ __forceinline std::vector<std::string> StrSplit(const std::string& _string, char
 {
 	std::vector<std::string> tokens;
 	std::string token;
-	std::istringstream tokenStream(_string);
-	while (std::getline(tokenStream, token, _split))
-		tokens.push_back(token);
+	token.reserve(_string.size());
+
+	for (const char& ch : _string)
+	{
+		if (ch == _split)
+		{
+			tokens.emplace_back(std::move(token));
+			continue;
+		}
+
+		token += ch;
+	}
+
 	return tokens;
 }
 
-#include "IMemoryBlock.h"
 #include "EMemoryBlock.h"
-#include "EStaticMemoryBlock.h"
 #include "EMemoryPool.h"
-#include "EAllocator.h"
 
 #include "ESchema.h"
 #include "ERow.h"

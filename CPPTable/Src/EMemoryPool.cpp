@@ -4,7 +4,7 @@ EMemoryPool::EMemoryPool(memSize_t _slackSize, memIndex_t _count)
 	: m_slack(_slackSize)
 	, m_count(_count)
 	, m_blockSize(_slackSize + sizeof(EMemHeader))
-	, m_poolSize((_slackSize + sizeof(EMemHeader))* _count)
+	, m_poolSize((_slackSize + sizeof(EMemHeader)) * _count)
 {
 	m_memory = new char[m_poolSize];
 

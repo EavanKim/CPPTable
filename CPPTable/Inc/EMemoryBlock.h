@@ -1,44 +1,43 @@
 #ifndef	EMEMORYBLOCK_H__
 #define EMEMORYBLOCK_H__
 
+#include <fstream>
+#include <cassert>
+
+struct memHeader
+{
+	bool free_;
+};
+
 /// <summary>
 /// 하나의 메모리 관리 chunk입니다.
 /// </summary>
 /// <typeparam name="staticSize"></typeparam>
 
-class CPPTABLE_API EMemoryBlock : public IMemoryBlock
+class CPPTABLE_API EMemoryBlock
 {
 public:
-	EMemoryBlock(const memSize_t _segmentSize, const memSize_t _blockSize, const memSize_t _allignedByte)
-		: staticBlockSize(_blockSize)
+	EMemoryBlock(const memSize_t _segmentSize, const memSize_t _count = 10, const memSize_t _allignedByte = 16)
+		: blockCount(_count)
 		, segmentSize(_segmentSize)
-		, headerSize(sizeof(MemoryHeader))
-		, tailSize(sizeof(MemoryTail))
-		, totalSegmentInfoDataSize(sizeof(MemoryHeader) + sizeof(MemoryTail))
-		, totalManageDataSize(sizeof(MemoryHeader) + sizeof(MemoryTail) + _segmentSize)
-		, paddingSize( (_allignedByte - ((sizeof(MemoryHeader) + sizeof(MemoryTail) + _segmentSize ) % _allignedByte)) % (~_allignedByte))
+		, headerSize(sizeof(memHeader))
+		, paddingSize((_allignedByte - ((sizeof(memHeader) + _segmentSize) % _allignedByte)) % (~_allignedByte))
+		, totalManageDataSize(sizeof(memHeader) + _segmentSize + ((_allignedByte - ((sizeof(memHeader) + _segmentSize) % _allignedByte)) % (~_allignedByte)))
+		, totalMemorySize((sizeof(memHeader) + _segmentSize + ((_allignedByte - ((sizeof(memHeader) + _segmentSize) % _allignedByte)) % (~_allignedByte))) * _count)
 	{
-		m_data = new EBYTE[_blockSize];
-		memset(m_data, 0, _blockSize);
+		m_data = new EBYTE[totalMemorySize];
+		memset(m_data, 0x00, totalMemorySize);
 		m_start = ParsePtr(m_data);
-		m_end = m_start + _blockSize;
+		m_end = m_start + totalMemorySize;
 
-		INTPTR memSeek = m_start;
+		INTPTR seek = m_start;
 
-		do
+		while (m_end > seek)
 		{
-			INTPTR prevStart = memSeek;
-			MemoryHeader* prevHeader = (MemoryHeader*)ParsePtr(prevStart);
-			memSeek += totalManageDataSize + paddingSize;
-			MemoryHeader* nextHeader = (MemoryHeader*)ParsePtr(memSeek);
-
-			prevHeader->next_ = nextHeader;
-			m_free.insert(ParsePtr((prevStart + headerSize)));
-			if (m_end > memSeek)
-			{
-				nextHeader->prev_ = prevHeader;
-			}
-		} while (m_end > memSeek);
+			memHeader* header = (memHeader*)ParsePtr(seek);
+			header->free_ = true;
+			seek += totalManageDataSize;
+		}
 	}
 
 	~EMemoryBlock()
@@ -50,23 +49,30 @@ public:
 		}
 	}
 
-	virtual void* Malloc(memSize_t _size)
+	virtual void* EMalloc()
 	{
-		void* result = nullptr;
-		if (m_free.size())
+		INTPTR start = m_start;
+		while (m_end > start)
 		{
-			result = *m_free.begin();
-			m_free.erase(result);
+			memHeader* header = (memHeader*)ParsePtr(start);
+			if (header->free_)
+			{
+				header->free_ = false;
+				return  ParsePtr(start + headerSize);
+			}
+
+			start += totalManageDataSize;
 		}
 
-		return result;
+		return nullptr;
 	}
 
-	virtual void Free(void* _ptr)
+	virtual void EFree(void* _ptr)
 	{
 		if (CheckRange(_ptr))
 		{
-			m_free.insert(_ptr);
+			memHeader* header = (memHeader*)ParsePtr(ParsePtr(_ptr) + headerSize);
+			header->free_ = true;
 		}
 		else
 		{
@@ -88,17 +94,24 @@ public:
 		return false;
 	}
 
-private:
-	const memSize_t staticBlockSize = 0;
+	virtual void PrintDebugMemoryInfo(void(*_func)(memSize_t, memSize_t, EBYTE))
+	{
+		if (nullptr != _func)
+		{
+			for (memSize_t seek = 0; totalMemorySize > seek; ++seek)
+				_func(seek, totalManageDataSize, m_data[seek]);
+		}
+	}
+
+	const memSize_t totalMemorySize = 0;
+	const memSize_t blockCount = 0;
 	const memSize_t segmentSize = 0;
 	const memSize_t headerSize = 0;
-	const memSize_t tailSize = 0;
 	const memSize_t paddingSize = 0;
 	const memSize_t totalManageDataSize = 0;
-	const memSize_t totalSegmentInfoDataSize = 0;
+private:
 	INTPTR m_start = 0;
 	INTPTR m_end = 0;
-	std::unordered_set<void*> m_free;
 	EBYTE* m_data = nullptr;
 };
 
