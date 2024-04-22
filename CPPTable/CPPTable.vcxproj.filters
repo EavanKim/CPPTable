@@ -30,13 +30,13 @@
     <ClInclude Include="Inc\ESchema.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Inc\EMemoryPool.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Inc\IEntity.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Inc\EMemoryBlock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\EColumnAllocator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,9 +48,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Src\Schema.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\EMemoryPool.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

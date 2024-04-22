@@ -134,11 +134,23 @@ enum ERTTI
 	ERTTI_MAX
 };
 
+struct CPPTABLE_API memHeader
+{
+	bool free_;
+	EMemoryBlock* block_;
+};
+
+struct CPPTABLE_API memHeader_Column
+{
+	bool free_ = true;
+	EColumnAllocator* block_ = nullptr;
+};
+
 // 동적 사이즈를 사용하는 문자열 관련 처리는 EMemory에서 대부분 처리하기
 // 자신의 타입정보를 기록하고 반환할 때는 m_type대로 처리해서 돌려줍니다.
 // 데이터 자체는 링크드 리스트로 관리하고,
 // 테이블에서의 데이터 위치는 키값으로 처리합니다.
-struct CPPTABLE_API EListValue
+struct CPPTABLE_API EListValue : public memHeader_Column
 {
 	EListValue(ERTTI _rtti, columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
 		: m_type(_rtti)
@@ -149,8 +161,6 @@ struct CPPTABLE_API EListValue
 	{
 		
 	}
-
-
 
 	ERTTI m_type = ERTTI::ERTTI_UNKNOWN;
 	columnId_t m_column = 0;
@@ -174,7 +184,13 @@ struct CPPTABLE_API EListValue_DATETIME : EListValue
 
 	}
 
-	eDateTime_t m_data = std::chrono::high_resolution_clock::now();
+	eDateTime_t operator=(std::chrono::high_resolution_clock::duration _val)
+	{
+		m_data = eDateTime_t(_val);
+		return m_data;
+	}
+
+	eDateTime_t m_data = eDateTime_t(std::chrono::high_resolution_clock::duration::zero());
 };
 
 struct CPPTABLE_API EListValue_INT : EListValue
@@ -190,6 +206,12 @@ struct CPPTABLE_API EListValue_INT : EListValue
 		, m_data(_init)
 	{
 
+	}
+
+	eInt_t operator=(eInt_t _val)
+	{
+		m_data = _val;
+		return m_data;
 	}
 
 	eInt_t m_data = 0;
@@ -210,6 +232,12 @@ struct CPPTABLE_API EListValue_FLOAT : EListValue
 
 	}
 
+	eFloat_t operator=(eFloat_t _val)
+	{
+		m_data = _val;
+		return m_data;
+	}
+
 	// 4byte가 될 수 있으므로 작은 수 기준으로 선언합니다.
 	eFloat_t m_data = 0.f;
 };
@@ -227,6 +255,12 @@ struct CPPTABLE_API EListValue_STRING : EListValue
 		, m_data(_init)
 	{
 
+	}
+
+	eStr_t operator=(eStr_t _val)
+	{
+		m_data = _val;
+		return m_data;
 	}
 
 	eStr_t m_data = "";
@@ -253,7 +287,7 @@ __forceinline std::vector<std::string> StrSplit(const std::string& _string, char
 }
 
 #include "EMemoryBlock.h"
-#include "EMemoryPool.h"
+#include "EColumnAllocator.h"
 
 #include "ESchema.h"
 #include "ERow.h"

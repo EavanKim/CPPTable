@@ -4,11 +4,6 @@
 #include <fstream>
 #include <cassert>
 
-struct memHeader
-{
-	bool free_;
-};
-
 /// <summary>
 /// 하나의 메모리 관리 chunk입니다.
 /// </summary>
@@ -36,6 +31,7 @@ public:
 		{
 			memHeader* header = (memHeader*)ParsePtr(seek);
 			header->free_ = true;
+			header->block_ = this;
 			seek += totalManageDataSize;
 		}
 	}
@@ -71,7 +67,7 @@ public:
 	{
 		if (CheckRange(_ptr))
 		{
-			memHeader* header = (memHeader*)ParsePtr(ParsePtr(_ptr) + headerSize);
+			memHeader* header = (memHeader*)ParsePtr(ParsePtr(_ptr) - headerSize);
 			header->free_ = true;
 		}
 		else

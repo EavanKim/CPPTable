@@ -140,9 +140,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\EColumnAllocator.h" />
     <ClInclude Include="Inc\CPPTable.h" />
     <ClInclude Include="Inc\EMemoryBlock.h" />
-    <ClInclude Include="Inc\EMemoryPool.h" />
     <ClInclude Include="Inc\ERow.h" />
     <ClInclude Include="Inc\ETable.h" />
     <ClInclude Include="Inc\Define_CPPTable.h" />
@@ -150,7 +150,6 @@
     <ClInclude Include="Inc\IEntity.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\EMemoryPool.cpp" />
     <ClCompile Include="Src\Schema.cpp" />
     <ClCompile Include="Src\Row.cpp" />
     <ClCompile Include="Src\Table.cpp" />

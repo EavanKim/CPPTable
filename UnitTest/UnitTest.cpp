@@ -40,5 +40,16 @@ int main()
 		test.PrintDebugMemoryInfo(PrintMemoryByte);
 	}
 
+	for (int seek = 0; TESTCOUNT > seek; ++seek)
+	{
+		int* ptr = (int*)test.EMalloc();
+		if (nullptr != ptr)
+		{
+			*ptr = seek;
+			ptrs.push_back(ptr);
+			test.PrintDebugMemoryInfo(PrintMemoryByte);
+		}
+	}
+
 	ptrs.clear();
 }
