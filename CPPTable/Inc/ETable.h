@@ -12,7 +12,7 @@
 
 namespace CPPTable
 {
-	class CPPTABLE_API ETable
+	class ETable
 	{
 	public:
 		ETable()
@@ -23,6 +23,22 @@ namespace CPPTable
 		~ETable()
 		{
 
+		}
+
+		void Query(std::string& _query)
+		{
+
+		}
+
+		void Save(std::filesystem::path _path)
+		{
+			FILE* filePtr = nullptr;
+			errno_t error = fopen_s(&filePtr, _path.relative_path().string().c_str(), "w+");
+			if (0 == error)
+			{
+				fclose(filePtr);
+				filePtr = nullptr;
+			}
 		}
 
 	private:
@@ -61,9 +77,6 @@ namespace CPPTable
 
 		primaryId_t m_indexCounter = 0;
 		std::vector<ERTTI> m_columns;
-		std::unordered_map<columnId_t, std::unordered_map<primaryId_t, EListValue*>> m_columnData;
-		std::unordered_map<primaryId_t, std::unordered_map<columnId_t, EListValue*>> m_rowData;
-		EListValue* m_values = nullptr;
 	};
 }
 

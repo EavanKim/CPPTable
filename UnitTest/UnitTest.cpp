@@ -13,43 +13,5 @@ void PrintMemoryByte(memSize_t _index, memSize_t _xLength, EBYTE _value)
 
 int main()
 {
-	std::cout << "Hello World!\n";
 
-	CPPTable::ETable table;
-	EMemoryBlock test(8, TESTCOUNT, 16);
-	std::vector<void*> ptrs;
-	ptrs.reserve(TESTCOUNT);
-
-	test.PrintDebugMemoryInfo(PrintMemoryByte);
-
-	for (int seek = 0; TESTCOUNT > seek; ++seek)
-	{
-		int* ptr = (int*)test.EMalloc();
-		if (nullptr != ptr)
-		{
-			*ptr = seek;
-			ptrs.push_back(ptr);
-			test.PrintDebugMemoryInfo(PrintMemoryByte);
-		}
-	}
-
-
-	for (int seek = 0; TESTCOUNT > seek; ++seek)
-	{
-		test.EFree(ptrs[seek]);
-		test.PrintDebugMemoryInfo(PrintMemoryByte);
-	}
-
-	for (int seek = 0; TESTCOUNT > seek; ++seek)
-	{
-		int* ptr = (int*)test.EMalloc();
-		if (nullptr != ptr)
-		{
-			*ptr = seek;
-			ptrs.push_back(ptr);
-			test.PrintDebugMemoryInfo(PrintMemoryByte);
-		}
-	}
-
-	ptrs.clear();
 }

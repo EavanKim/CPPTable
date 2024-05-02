@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -113,6 +113,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,19 +142,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\EColumnAllocator.h" />
     <ClInclude Include="Inc\CPPTable.h" />
-    <ClInclude Include="Inc\EMemoryBlock.h" />
     <ClInclude Include="Inc\ERow.h" />
     <ClInclude Include="Inc\ETable.h" />
-    <ClInclude Include="Inc\Define_CPPTable.h" />
     <ClInclude Include="Inc\ESchema.h" />
-    <ClInclude Include="Inc\IEntity.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Schema.cpp" />
-    <ClCompile Include="Src\Row.cpp" />
-    <ClCompile Include="Src\Table.cpp" />
+    <ClCompile Include="src\check.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

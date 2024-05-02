@@ -24,30 +24,12 @@
     <ClInclude Include="Inc\CPPTable.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Inc\Define_CPPTable.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Inc\ESchema.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Inc\IEntity.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Inc\EMemoryBlock.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Inc\EColumnAllocator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Table.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Row.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Schema.cpp">
+    <ClCompile Include="src\check.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

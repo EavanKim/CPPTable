@@ -12,9 +12,9 @@
 #include <string>
 #include <sstream>
 
-#include <exception>
+#include <filesystem>
 
-#include "Define_CPPTable.h"
+#include <exception>
 
 // 주의, 32비트로 만들고 64비트 호환모드로 사용하면 메모리가 절삭될 수 있습니다.
 // 반드시 타겟 아키텍처를 일치시켜서 사용하세요.
@@ -25,104 +25,17 @@ using INTPTR = uint64_t;
 using INTPTR = uint32_t;
 #endif
 
-template<typename T>
-struct IPTR
-{
-public:
-	IPTR()
-	{
-
-	}
-
-	IPTR(T* _ptr, bool _dispose = false)
-		: ptr_(_ptr)
-		, disposePtr_(_dispose)
-	{
-
-	}
-
-	IPTR(INTPTR _int, bool _dispose = false)
-		: ptr_((T*)_int)
-		, disposePtr_(_dispose)
-	{
-
-	}
-
-	virtual ~IPTR()
-	{
-		if ((nullptr != ptr_) && disposePtr_)
-		{
-			delete ptr_;
-			ptr_ = nullptr;
-		}
-	}
-
-	T* operator->()
-	{
-		return ptr_;
-	}
-
-	INTPTR operator*()
-	{
-		return (INTPTR)ptr_;
-	}
-
-	INTPTR operator=(INTPTR _int)
-	{
-		if ((nullptr != ptr_) && disposePtr_)
-		{
-			delete ptr_;
-			ptr_ = nullptr;
-		}
-
-		ptr_ = (INTPTR)_int;
-		return ptr_;
-	}
-
-	T* operator=(T* _ptr)
-	{
-		if ((nullptr != ptr_) && disposePtr_)
-		{
-			delete ptr_;
-			ptr_ = nullptr;
-		}
-
-		ptr_ = _ptr;
-		return ptr_;
-	}
-
-private:
-	bool disposePtr_ = false;
-	T* ptr_ = nullptr;
-};
-
-
-typedef unsigned char EBYTE;
-
-__forceinline INTPTR ParsePtr(void* _ptr)
-{
-	return (INTPTR)_ptr;
-}
-
-__forceinline INTPTR ParsePtr(EBYTE* _ptr)
-{
-	return (INTPTR)_ptr;
-}
-
-__forceinline void* ParsePtr(INTPTR _int)
-{
-	return (void*)_int;
-}
-
 typedef unsigned long memSize_t;
 typedef unsigned long memIndex_t;
 typedef unsigned long columnId_t;
 typedef unsigned long primaryId_t;
 
-using eDateTime_t	= std::chrono::high_resolution_clock::time_point;
+//using eDateTime_t	= std::chrono::high_resolution_clock::time_point;
+using eDateTime_t	= uint64_t;
 using eFloat_t		= double;
 using eStr_t		= std::string;
 using eInt_t		= int64_t;
+using EBYTE			= unsigned char;
 
 enum ERTTI
 {
@@ -134,180 +47,205 @@ enum ERTTI
 	ERTTI_MAX
 };
 
-struct CPPTABLE_API memHeader
+struct IEntity
 {
-	bool free_;
-	EMemoryBlock* block_;
+	IEntity(ERTTI _type)
+		: m_type(_type)
+	{
+
+	}
+
+	virtual void PrintDataToBuffer() = 0;
+
+	ERTTI m_type = ERTTI::ERTTI_UNKNOWN;
 };
 
-struct CPPTABLE_API memHeader_Column
+struct Entity_Int : public IEntity
 {
-	bool free_ = true;
-	EColumnAllocator* block_ = nullptr;
+	Entity_Int()
+		: IEntity(ERTTI::ERTTI_INT)
+		, m_data(0)
+	{
+
+	}
+
+	Entity_Int(eInt_t _data)
+		: IEntity(ERTTI::ERTTI_INT)
+		, m_data(_data)
+	{
+
+	}
+
+	Entity_Int(IEntity* _entity)
+		: IEntity(ERTTI::ERTTI_INT)
+		, m_data(0)
+	{
+		switch (_entity->m_type)
+		{
+		case ERTTI::ERTTI_DATETIME:
+			m_data = static_cast<Entity_Datetime*>(_entity)->m_data;
+			break;
+		case ERTTI::ERTTI_INT:
+			m_data = static_cast<Entity_Int*>(_entity)->m_data;
+			break;
+		case ERTTI::ERTTI_FLOAT:
+			m_data = static_cast<eInt_t>(static_cast<Entity_Float*>(_entity)->m_data);
+			break;
+		}
+	}
+
+	virtual void PrintDataToBuffer()
+	{
+		vfprintf();
+	}
+
+	eInt_t m_data;
 };
 
-// 동적 사이즈를 사용하는 문자열 관련 처리는 EMemory에서 대부분 처리하기
-// 자신의 타입정보를 기록하고 반환할 때는 m_type대로 처리해서 돌려줍니다.
-// 데이터 자체는 링크드 리스트로 관리하고,
-// 테이블에서의 데이터 위치는 키값으로 처리합니다.
-struct CPPTABLE_API EListValue : public memHeader_Column
+struct Entity_Float : public IEntity
 {
-	EListValue(ERTTI _rtti, columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
-		: m_type(_rtti)
-		, m_column(_x)
-		, m_row(_y)
-		, m_prev(_prev)
-		, m_next(_next)
+	Entity_Float()
+		: IEntity(ERTTI::ERTTI_FLOAT)
+		, m_data(0)
+	{
+
+	}
+
+	Entity_Float(float _data)
+		: IEntity(ERTTI::ERTTI_FLOAT)
+		, m_data(_data)
+	{
+
+	}
+
+	Entity_Float(eFloat_t _data)
+		: IEntity(ERTTI::ERTTI_FLOAT)
+		, m_data(_data)
+	{
+
+	}
+
+	Entity_Float(IEntity* _entity)
+		: IEntity(ERTTI::ERTTI_FLOAT)
+		, m_data(0)
+	{
+		switch (_entity->m_type)
+		{
+		case ERTTI::ERTTI_INT:
+			m_data = static_cast<eFloat_t>(static_cast<Entity_Int*>(_entity)->m_data);
+			break;
+		case ERTTI::ERTTI_FLOAT:
+			m_data = static_cast<Entity_Float*>(_entity)->m_data;
+			break;
+		}
+	}
+
+	virtual void PrintDataToBuffer()
+	{
+
+	}
+
+	eFloat_t m_data;
+};
+
+struct Entity_Datetime : public IEntity
+{
+	Entity_Datetime()
+		: IEntity(ERTTI::ERTTI_DATETIME)
+		, m_data(0)
 	{
 		
 	}
 
-	void Set(columnId_t _x, primaryId_t _y, EListValue* _serializePrev)
+	Entity_Datetime(eDateTime_t _time)
+		: IEntity(ERTTI::ERTTI_DATETIME)
+		, m_data(_time)
 	{
-		m_column = _x;
-		m_row = _y;
-		m_next = nullptr;
 
-		if (nullptr != _serializePrev)
+	}
+
+	Entity_Datetime(time_t _time)
+		: IEntity(ERTTI::ERTTI_DATETIME)
+		, m_data(_time)
+	{
+
+	}
+
+	Entity_Datetime(IEntity* _entity)
+		: IEntity(ERTTI::ERTTI_DATETIME)
+		, m_data(0)
+	{
+		switch (_entity->m_type)
 		{
-			EListValue* serializeNext = _serializePrev->m_next;
-			if (nullptr != serializeNext)
-			{
-				serializeNext->m_prev = this;
-				m_next = serializeNext;
-			}
-
-			_serializePrev->m_next = this;
+		case ERTTI::ERTTI_DATETIME:
+			m_data = static_cast<Entity_Datetime*>(_entity)->m_data;
+			break;
+		case ERTTI::ERTTI_INT:
+			m_data = static_cast<Entity_Int*>(_entity)->m_data;
+			break;
 		}
-
-		m_prev = _serializePrev;
 	}
 
-	void Clear()
+	virtual void PrintDataToBuffer()
 	{
-		m_column = 0;
-		m_row = 0;
-		if (nullptr != m_prev)
+
+	}
+
+	eDateTime_t m_data;
+};
+
+struct Entity_String : public IEntity
+{
+	Entity_String()
+		: IEntity(ERTTI::ERTTI_STRING)
+		, m_blockLength(0)
+		, m_data("")
+	{
+
+	}
+
+	Entity_String(eStr_t _str)
+		: IEntity(ERTTI::ERTTI_STRING)
+		, m_blockLength(_str.size())
+		, m_data(_str)
+	{
+
+	}
+
+	Entity_String(IEntity* _entity)
+		: IEntity(ERTTI::ERTTI_STRING)
+		, m_blockLength(0)
+		, m_data("")
+	{
+		switch (_entity->m_type)
 		{
-			m_prev->m_next = m_next;
+		case ERTTI::ERTTI_STRING:
+			Entity_String* casting = static_cast<Entity_String*>(_entity);
+			m_blockLength = casting->m_blockLength;
+			m_data = casting->m_data;
+			break;
+		default:
+			break;
 		}
-		if (nullptr != m_next)
-		{
-			m_next->m_prev = m_prev;
-		}
-
-		m_prev = nullptr;
-		m_next = nullptr;
 	}
 
-	ERTTI m_type = ERTTI::ERTTI_UNKNOWN;
-	columnId_t m_column = 0;
-	primaryId_t m_row = 0;
-	EListValue* m_prev = nullptr;
-	EListValue* m_next = nullptr;
-};
-
-struct CPPTABLE_API EListValue_DATETIME : EListValue
-{
-	EListValue_DATETIME(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
-		: EListValue(ERTTI::ERTTI_DATETIME, _x, _y, _prev, _next)
+	virtual void PrintDataToBuffer()
 	{
 
 	}
 
-	EListValue_DATETIME(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eDateTime_t _init)
-		: EListValue(ERTTI::ERTTI_DATETIME, _x, _y, _prev, _next)
-		, m_data(_init)
-	{
+	// 저장할 때 문자열 배열 블럭길이 표시용 데이터입니다.
+	eInt_t m_blockLength;
 
-	}
-
-	eDateTime_t operator=(std::chrono::high_resolution_clock::duration _val)
-	{
-		m_data = eDateTime_t(_val);
-		return m_data;
-	}
-
-	eDateTime_t m_data = eDateTime_t(std::chrono::high_resolution_clock::duration::zero());
-};
-
-struct CPPTABLE_API EListValue_INT : EListValue
-{
-	EListValue_INT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
-		: EListValue(ERTTI::ERTTI_INT, _x, _y, _prev, _next)
-	{
-
-	}
-
-	EListValue_INT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eInt_t _init)
-		: EListValue(ERTTI::ERTTI_INT, _x, _y, _prev, _next)
-		, m_data(_init)
-	{
-
-	}
-
-	eInt_t operator=(eInt_t _val)
-	{
-		m_data = _val;
-		return m_data;
-	}
-
-	eInt_t m_data = 0;
-};
-
-struct CPPTABLE_API EListValue_FLOAT : EListValue
-{
-	EListValue_FLOAT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
-		: EListValue(ERTTI::ERTTI_FLOAT, _x, _y, _prev, _next)
-	{
-
-	}
-
-	EListValue_FLOAT(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eFloat_t _init)
-		: EListValue(ERTTI::ERTTI_FLOAT, _x, _y, _prev, _next)
-		, m_data(_init)
-	{
-
-	}
-
-	eFloat_t operator=(eFloat_t _val)
-	{
-		m_data = _val;
-		return m_data;
-	}
-
-	// 4byte가 될 수 있으므로 작은 수 기준으로 선언합니다.
-	eFloat_t m_data = 0.f;
-};
-
-struct CPPTABLE_API EListValue_STRING : EListValue
-{
-	EListValue_STRING(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next)
-		: EListValue(ERTTI::ERTTI_STRING, _x, _y, _prev, _next)
-	{
-
-	}
-
-	EListValue_STRING(columnId_t _x, primaryId_t _y, EListValue* _prev, EListValue* _next, eStr_t _init)
-		: EListValue(ERTTI::ERTTI_STRING, _x, _y, _prev, _next)
-		, m_data(_init)
-	{
-
-	}
-
-	eStr_t operator=(eStr_t _val)
-	{
-		m_data = _val;
-		return m_data;
-	}
-
-	eStr_t m_data = "";
+	//std::String은 동적 배열이 자체적으로 있다보니 저장할 때 그대로 사용되지 않고
+	// std::vector<char[16]> 처럼 취급해서 저장합니다.
+	eStr_t m_data;
 };
 
 __forceinline std::vector<std::string> StrSplit(const std::string& _string, char _split)
 {
 	std::vector<std::string> tokens;
-	std::string token;
+	std::string token = "";
 	token.reserve(_string.size());
 
 	for (const char& ch : _string)
@@ -323,9 +261,6 @@ __forceinline std::vector<std::string> StrSplit(const std::string& _string, char
 
 	return tokens;
 }
-
-#include "EMemoryBlock.h"
-#include "EColumnAllocator.h"
 
 #include "ESchema.h"
 #include "ERow.h"
