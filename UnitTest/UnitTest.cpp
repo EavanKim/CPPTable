@@ -13,5 +13,10 @@ void PrintMemoryByte(memSize_t _index, memSize_t _xLength, EBYTE _value)
 
 int main()
 {
+	IEntity m_;
 
+	m_ = (eInt_t)100;
+	m_ = 99.f;
+	m_ = (eDateTime_t)999;
+	m_ = "1000";
 }

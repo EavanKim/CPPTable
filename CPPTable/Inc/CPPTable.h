@@ -34,6 +34,8 @@ typedef unsigned long primaryId_t;
 using eDateTime_t	= uint64_t;
 using eFloat_t		= double;
 using eStr_t		= std::string;
+using eChar_t		= char;
+using eChar_p		= char*;
 using eInt_t		= int64_t;
 using EBYTE			= unsigned char;
 
@@ -49,197 +51,102 @@ enum ERTTI
 
 struct IEntity
 {
-	IEntity(ERTTI _type)
-		: m_type(_type)
+public:
+	IEntity()
+		: m_type(ERTTI::ERTTI_UNKNOWN)
+	{
+		m_data.i_ = 0; // 널정리
+	}
+
+	IEntity(eInt_t _int)
+		: m_type(ERTTI::ERTTI_INT)
+	{
+		m_data.i_ = _int;
+	}
+
+	IEntity(eFloat_t _float)
+		: m_type(ERTTI::ERTTI_FLOAT)
+	{
+		m_data.f_ = _float;
+	}
+
+	IEntity(eDateTime_t _dateTime)
+		: m_type(ERTTI::ERTTI_DATETIME)
+	{
+		m_data.d_ = _dateTime;
+	}
+
+	IEntity(eChar_p _char)
+		: m_type(ERTTI::ERTTI_STRING)
+	{
+		int size = strlen(_char);
+		m_data.s_ = new	eChar_t[size];
+		memcpy_s(m_data.s_, size, _char, size);
+	}
+
+	IEntity(IEntity& _entity)
+		: m_type(_entity.m_type)
+		, m_data(_entity.m_data)
 	{
 
 	}
 
-	virtual void PrintDataToBuffer() = 0;
-
-	ERTTI m_type = ERTTI::ERTTI_UNKNOWN;
-};
-
-struct Entity_Int : public IEntity
-{
-	Entity_Int()
-		: IEntity(ERTTI::ERTTI_INT)
-		, m_data(0)
+	~IEntity()
 	{
-
-	}
-
-	Entity_Int(eInt_t _data)
-		: IEntity(ERTTI::ERTTI_INT)
-		, m_data(_data)
-	{
-
-	}
-
-	Entity_Int(IEntity* _entity)
-		: IEntity(ERTTI::ERTTI_INT)
-		, m_data(0)
-	{
-		switch (_entity->m_type)
+		switch (m_type)
 		{
-		case ERTTI::ERTTI_DATETIME:
-			m_data = static_cast<Entity_Datetime*>(_entity)->m_data;
-			break;
-		case ERTTI::ERTTI_INT:
-			m_data = static_cast<Entity_Int*>(_entity)->m_data;
-			break;
-		case ERTTI::ERTTI_FLOAT:
-			m_data = static_cast<eInt_t>(static_cast<Entity_Float*>(_entity)->m_data);
-			break;
+		case ERTTI::ERTTI_STRING : delete[] m_data.s_;
 		}
 	}
 
-	virtual void PrintDataToBuffer()
+	eInt_t operator=(eInt_t _data)
 	{
-		vfprintf();
+		m_type = ERTTI::ERTTI_INT;
+		m_data.i_ = _data;
+		return m_data.i_;
 	}
 
-	eInt_t m_data;
-};
-
-struct Entity_Float : public IEntity
-{
-	Entity_Float()
-		: IEntity(ERTTI::ERTTI_FLOAT)
-		, m_data(0)
+	eFloat_t operator=(eFloat_t _data)
 	{
-
+		m_type = ERTTI::ERTTI_FLOAT;
+		m_data.f_ = _data;
+		return m_data.f_;
 	}
 
-	Entity_Float(float _data)
-		: IEntity(ERTTI::ERTTI_FLOAT)
-		, m_data(_data)
+	eDateTime_t operator=(eDateTime_t _data)
 	{
-
+		m_type = ERTTI::ERTTI_DATETIME;
+		m_data.d_ = _data;
+		return m_data.d_;
 	}
 
-	Entity_Float(eFloat_t _data)
-		: IEntity(ERTTI::ERTTI_FLOAT)
-		, m_data(_data)
+	eChar_p operator=(eChar_p _data)
 	{
-
+		m_type = ERTTI::ERTTI_STRING;
+		int size = strlen(_data);
+		m_data.s_ = new	eChar_t[size];
+		memcpy_s(m_data.s_, size, _data, size);
+		return m_data.s_;
 	}
 
-	Entity_Float(IEntity* _entity)
-		: IEntity(ERTTI::ERTTI_FLOAT)
-		, m_data(0)
+	eChar_p operator=(const char*&& _data)
 	{
-		switch (_entity->m_type)
-		{
-		case ERTTI::ERTTI_INT:
-			m_data = static_cast<eFloat_t>(static_cast<Entity_Int*>(_entity)->m_data);
-			break;
-		case ERTTI::ERTTI_FLOAT:
-			m_data = static_cast<Entity_Float*>(_entity)->m_data;
-			break;
-		}
+		m_type = ERTTI::ERTTI_STRING;
+		int size = strlen(_data);
+		m_data.s_ = new	eChar_t[size + 1];
+		memcpy_s(m_data.s_, size, _data, size);
+		m_data.s_[size] = '\0';
+		return m_data.s_;
 	}
 
-	virtual void PrintDataToBuffer()
+	ERTTI m_type;
+	union binaryData
 	{
-
-	}
-
-	eFloat_t m_data;
-};
-
-struct Entity_Datetime : public IEntity
-{
-	Entity_Datetime()
-		: IEntity(ERTTI::ERTTI_DATETIME)
-		, m_data(0)
-	{
-		
-	}
-
-	Entity_Datetime(eDateTime_t _time)
-		: IEntity(ERTTI::ERTTI_DATETIME)
-		, m_data(_time)
-	{
-
-	}
-
-	Entity_Datetime(time_t _time)
-		: IEntity(ERTTI::ERTTI_DATETIME)
-		, m_data(_time)
-	{
-
-	}
-
-	Entity_Datetime(IEntity* _entity)
-		: IEntity(ERTTI::ERTTI_DATETIME)
-		, m_data(0)
-	{
-		switch (_entity->m_type)
-		{
-		case ERTTI::ERTTI_DATETIME:
-			m_data = static_cast<Entity_Datetime*>(_entity)->m_data;
-			break;
-		case ERTTI::ERTTI_INT:
-			m_data = static_cast<Entity_Int*>(_entity)->m_data;
-			break;
-		}
-	}
-
-	virtual void PrintDataToBuffer()
-	{
-
-	}
-
-	eDateTime_t m_data;
-};
-
-struct Entity_String : public IEntity
-{
-	Entity_String()
-		: IEntity(ERTTI::ERTTI_STRING)
-		, m_blockLength(0)
-		, m_data("")
-	{
-
-	}
-
-	Entity_String(eStr_t _str)
-		: IEntity(ERTTI::ERTTI_STRING)
-		, m_blockLength(_str.size())
-		, m_data(_str)
-	{
-
-	}
-
-	Entity_String(IEntity* _entity)
-		: IEntity(ERTTI::ERTTI_STRING)
-		, m_blockLength(0)
-		, m_data("")
-	{
-		switch (_entity->m_type)
-		{
-		case ERTTI::ERTTI_STRING:
-			Entity_String* casting = static_cast<Entity_String*>(_entity);
-			m_blockLength = casting->m_blockLength;
-			m_data = casting->m_data;
-			break;
-		default:
-			break;
-		}
-	}
-
-	virtual void PrintDataToBuffer()
-	{
-
-	}
-
-	// 저장할 때 문자열 배열 블럭길이 표시용 데이터입니다.
-	eInt_t m_blockLength;
-
-	//std::String은 동적 배열이 자체적으로 있다보니 저장할 때 그대로 사용되지 않고
-	// std::vector<char[16]> 처럼 취급해서 저장합니다.
-	eStr_t m_data;
+		eInt_t i_;
+		eFloat_t f_;
+		eDateTime_t d_;
+		eChar_p s_;
+	} m_data;
 };
 
 __forceinline std::vector<std::string> StrSplit(const std::string& _string, char _split)
@@ -262,8 +169,8 @@ __forceinline std::vector<std::string> StrSplit(const std::string& _string, char
 	return tokens;
 }
 
-#include "ESchema.h"
 #include "ERow.h"
+#include "ESchema.h"
 #include "ETable.h"
 
 #endif

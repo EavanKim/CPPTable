@@ -6,6 +6,10 @@ namespace CPPTable
 	class ERow : public std::vector<IEntity*>
 	{
 	public:
+		~ERow()
+		{
+			vector::~vector();
+		}
 
 	private:
 		
