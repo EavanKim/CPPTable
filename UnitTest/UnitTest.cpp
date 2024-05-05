@@ -18,5 +18,14 @@ int main()
 	m_ = (eInt_t)100;
 	m_ = 99.f;
 	m_ = (eDateTime_t)999;
-	m_ = "1000";
+	m_ = "1000000000000000";
+
+	FILE* fPtr = nullptr;
+	fopen_s(&fPtr, "./table.t", "w+");
+	if (nullptr != fPtr)
+	{
+		m_.Save(fPtr);
+		m_.Load(fPtr);
+		fclose(fPtr);
+	}
 }

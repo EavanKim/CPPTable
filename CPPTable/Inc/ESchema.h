@@ -11,7 +11,7 @@ namespace CPPTable
 			vector::~vector();
 		}
 
-		void SetRow(ERow& _target)
+		void InitRow(ERow& _target)
 		{
 			_target.clear();
 			columnId_t maximum = size();
@@ -23,18 +23,27 @@ namespace CPPTable
 
 		void ResetRow(ERow& _target)
 		{
-			columnId_t maximum = size();
-			for (columnId_t seek = 0; maximum > seek; ++seek)
+			if (size() > _target.size())
 			{
-				_target.push_back(Copy(seek)); // emplace_back이 있는건 알지만 푸쉬로 합니다.
+				columnId_t maximum = size();
+				for (columnId_t seek = 0; maximum > seek; ++seek)
+				{
+					_target.push_back(Copy(seek)); // emplace_back이 있는건 알지만 푸쉬로 합니다.
+				}
+			}
+			else
+			{
+				columnId_t maximum = size();
+				for (columnId_t seek = 0; maximum > seek; ++seek)
+				{
+					_target.push_back(Copy(seek)); // emplace_back이 있는건 알지만 푸쉬로 합니다.
+				}
 			}
 		}
 
 		IEntity* Copy(columnId_t _col)
 		{
-			IEntity* target = (*this)[_col];
-
-			return nullptr;
+			return new IEntity((*this)[_col]);
 		}
 
 	private:

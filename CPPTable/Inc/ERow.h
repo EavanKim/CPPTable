@@ -3,6 +3,17 @@
 
 namespace CPPTable
 {
+	struct EStrBlock
+	{
+		char m_str[16];
+	};
+
+	class EStrPage
+	{
+	public:
+		EStrBlock m_block[256];
+	};
+
 	class ERow : public std::vector<IEntity*>
 	{
 	public:
@@ -12,7 +23,7 @@ namespace CPPTable
 		}
 
 	private:
-		
+		std::list<EStrPage> m_strPages;
 	};
 }
 
